@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Course — DevLearn</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="logo" onclick="location.href='index.html'">⚡ DevLearn</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="progress.html">📊 Progress</a>
+    <button id="themeBtn">🌙</button>
+  </nav>
+</header>
+
+<main id="courseMain">
+  <div id="courseHeader"></div>
+  <div id="lessonsList"></div>
+  <div id="quizSection"></div>
+</main>
+
+<footer>DevLearn Premium • Keep learning 🚀</footer>
+
+<script src="data/languages.js"></script>
+<script src="data/courses.js"></script>
+<script src="data/quizzes.js"></script>
+<script src="storage.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const courseName = params.get("name") || "Python";
+
+let course = COURSES_DB[courseName];
+if (!course) {
+  const langData = ALL_LANGUAGES.find(l => l.name === courseName);
+  course = langData ? generateGenericCourse(courseName, langData.category) : null;
+}
+
+const main = document.getElementById("courseMain");
+
+if (!course) {
+  main.innerHTML = `<h2>Course nahi mila 😕</h2><a href="index.html">← Back to Home</a>`;
+} else {
+  // Header
+  const completed = course.lessons.filter((_, i) =>
+    Storage.isLessonComplete(courseName, i)).length;
+  const total = course.lessons.length;
+  const pct = Math.round((completed / total) * 100);
+
+  document.getElementById("courseHeader").innerHTML = `
+    <div class="course-hero">
+      <div class="course-icon">${course.icon}</div>
+      <h1>${courseName}</h1>
+      <p>${course.desc}</p>
+      <div class="meta">
+        <span>${course.tag}</span>
+        <span>${course.level}</span>
+        <span>${total} lessons</span>
+      </div>
+      <div class="progress-bar large">
+        <div style="width:${pct}%"></div>
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:13px">
+        ${completed}/${total} completed (${pct}%)
+      </p>
+    </div>
+  `;
+
+  // Lessons
+  document.getElementById("lessonsList").innerHTML = `
+    <h2 style="margin:32px 0 16px">📖 Lessons</h2>
+    <div class="lessons-grid">
+      ${course.lessons.map((l, i) => {
+        const done = Storage.isLessonComplete(courseName, i);
+        return `
+          <div class="lesson-card ${done ? 'done' : ''}"
+               onclick="location.href='lesson.html?course=${encodeURIComponent(courseName)}&i=${i}'">
+            <div class="lesson-num">${done ? "✅" : (i + 1)}</div>
+            <div>
+              <h4>${l.title}</h4>
+              <small>${l.theory.substring(0, 70)}...</small>
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  // Quiz
+  const quiz = getQuizForLang(courseName);
+  const quizScore = Storage.getAll().quizScores[courseName] || 0;
+
+  document.getElementById("quizSection").innerHTML = `
+    <h2 style="margin:32px 0 16px">🎯 Quiz</h2>
+    <div class="quiz-card">
+      <p>${quiz.length} questions • Best score: <b>${quizScore}/${quiz.length}</b></p>
+      <button class="primary-btn"
+        onclick="location.href='quiz.html?course=${encodeURIComponent(courseName)}'">
+        Take Quiz →
+      </button>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

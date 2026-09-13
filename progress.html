@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Progress — DevLearn</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="logo" onclick="location.href='index.html'">⚡ DevLearn</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="progress.html">📊 Progress</a>
+    <button id="themeBtn">🌙</button>
+  </nav>
+</header>
+
+<main id="progressMain"></main>
+<footer>DevLearn Premium 📊</footer>
+
+<script src="data/languages.js"></script>
+<script src="data/courses.js"></script>
+<script src="data/quizzes.js"></script>
+<script src="storage.js"></script>
+<script>
+const data = Storage.getAll();
+const level = Storage.getLevel(data.xp);
+const xpToNext = (level * 100) - data.xp;
+const completedList = Object.keys(data.completedLessons);
+
+document.getElementById("progressMain").innerHTML = `
+  <h1 style="margin-bottom:8px">📊 Your Dashboard</h1>
+  <p style="color:var(--muted);margin-bottom:32px">Track your learning journey</p>
+
+  <div class="stats-grid">
+    <div class="stat-card big">
+      <b>Lv ${level}</b>
+      <small>Current Level</small>
+    </div>
+    <div class="stat-card">
+      <b>${data.xp}</b>
+      <small>Total XP</small>
+    </div>
+    <div class="stat-card">
+      <b>🔥 ${data.streak}</b>
+      <small>Day Streak</small>
+    </div>
+    <div class="stat-card">
+      <b>${completedList.length}</b>
+      <small>Lessons Done</small>
+    </div>
+    <div class="stat-card">
+      <b>${Object.keys(data.quizScores).length}</b>
+      <small>Quizzes Taken</small>
+    </div>
+  </div>
+
+  <div class="xp-box">
+    <p>Progress to Level ${level + 1}: <b>${xpToNext} XP</b> remaining</p>
+    <div class="progress-bar large">
+      <div style="width:${(data.xp % 100)}%"></div>
+    </div>
+  </div>
+
+  <h2 style="margin:32px 0 16px">🎯 Quiz Scores</h2>
+  ${Object.keys(data.quizScores).length === 0
+    ? '<p style="color:var(--muted)">No quizzes taken yet. Start one!</p>'
+    : `<div class="scores-grid">${Object.entries(data.quizScores).map(([course, sc]) =>
+        `<div class="score-card"><b>${course}</b><span>${sc} correct</span></div>`
+      ).join("")}</div>`
+  }
+
+  <h2 style="margin:32px 0 16px">📚 Completed Lessons</h2>
+  ${completedList.length === 0
+    ? '<p style="color:var(--muted)">No lessons completed yet. Start learning!</p>'
+    : `<div class="completed-grid">${completedList.map(k => {
+        const [c, i] = k.split(":");
+        return `<div class="completed-item">✅ ${c} — Lesson ${parseInt(i) + 1}</div>`;
+      }).join("")}</div>`
+  }
+
+  <div style="margin-top:40px">
+    <button class="secondary-btn" onclick="if(confirm('Reset all progress?')) { Storage.reset(); location.reload(); }">
+      🗑 Reset Progress
+    </button>
+  </div>
+`;
+
+// Theme toggle
+const btn = document.getElementById("themeBtn");
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
+  btn.textContent = "☀️";
+}
+btn.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  const isDark = document.body.classList.contains("dark");
+  btn.textContent = isDark ? "☀️" : "🌙";
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+});
+</script>
+</body>
+</html>

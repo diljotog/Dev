@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DevLearn Premium — Learn Any Language</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="location.href='index.html'">⚡ DevLearn <span class="premium-badge">PRO</span></div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="progress.html">📊 Progress</a>
+    <button id="themeBtn">🌙</button>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <span class="pill">1000+ LANGUAGES • ZERO → PRO</span>
+    <h1>Learn coding.<br><span>Build anything.</span></h1>
+    <p>Complete courses with lessons, code editor, quizzes, and progress tracking. Beginner se Pro tak.</p>
+    <div class="search">
+      <input id="search" placeholder="Search Python, HTML, C++, React...">
+      <button id="searchBtn">🔍 Search</button>
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <!-- FILTERS -->
+  <section>
+    <div class="sectionHead">
+      <h2>📚 All Courses</h2>
+      <span id="count"></span>
+    </div>
+    <div id="filters" class="filters"></div>
+    <div id="courses" class="grid"></div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="roadmap">
+    <h2>🗺️ Your Roadmap</h2>
+    <div class="steps">
+      <div><b>01</b><strong>Learn</strong><small>Concepts & lessons</small></div>
+      <div><b>02</b><strong>Practice</strong><small>Quizzes & coding</small></div>
+      <div><b>03</b><strong>Build</strong><small>Real projects</small></div>
+      <div><b>04</b><strong>Master</strong><small>Advanced skills</small></div>
+    </div>
+  </section>
+</main>
+
+<footer>DevLearn Premium • Made for learners, not developers 🚀</footer>
+
+<script src="data/languages.js"></script>
+<script src="data/courses.js"></script>
+<script src="data/quizzes.js"></script>
+<script src="storage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiz — DevLearn</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="logo" onclick="location.href='index.html'">⚡ DevLearn</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="progress.html">📊 Progress</a>
+    <button id="themeBtn">🌙</button>
+  </nav>
+</header>
+
+<main id="quizMain"></main>
+<footer>DevLearn Premium 🎯</footer>
+
+<script src="data/languages.js"></script>
+<script src="data/courses.js"></script>
+<script src="data/quizzes.js"></script>
+<script src="storage.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const courseName = params.get("course") || "Python";
+const quiz = getQuizForLang(courseName);
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+function render() {
+  const main = document.getElementById("quizMain");
+
+  if (current >= quiz.length) {
+    // Result
+    Storage.saveQuizScore(courseName, score, quiz.length);
+    const pct = Math.round((score / quiz.length) * 100);
+    main.innerHTML = `
+      <div class="result-card">
+        <div style="font-size:80px">${pct >= 80 ? "🏆" : pct >= 50 ? "👍" : "📚"}</div>
+        <h1>Quiz Complete!</h1>
+        <p class="big-score">${score} / ${quiz.length}</p>
+        <p>${pct}% • ${pct >= 80 ? "Excellent!" : pct >= 50 ? "Good job!" : "Keep practicing!"}</p>
+        <div class="btn-row" style="justify-content:center">
+          <button onclick="location.href='course.html?name=${encodeURIComponent(courseName)}'">← Back to Course</button>
+          <button class="primary-btn" onclick="location.reload()">🔄 Retry</button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const q = quiz[current];
+  answered = false;
+
+  main.innerHTML = `
+    <div class="quiz-view">
+      <div class="progress-bar large">
+        <div style="width:${(current / quiz.length) * 100}%"></div>
+      </div>
+      <p class="quiz-counter">Question ${current + 1} of ${quiz.length}</p>
+
+      <h2>${q.q}</h2>
+
+      <div class="options">
+        ${q.opts.map((opt, i) => `
+          <button class="option-btn" data-i="${i}">${opt}</button>
+        `).join("")}
+      </div>
+
+      <button id="nextBtn" class="primary-btn" style="display:none">Next →</button>
+    </div>
+  `;
+
+  document.querySelectorAll(".option-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (answered) return;
+      answered = true;
+
+      const picked = parseInt(btn.dataset.i);
+      const correct = q.ans;
+
+      document.querySelectorAll(".option-btn").forEach((b, i) => {
+        if (i === correct) b.classList.add("correct");
+        else if (i === picked) b.classList.add("wrong");
+        b.disabled = true;
+      });
+
+      if (picked === correct) score++;
+
+      const nextBtn = document.getElementById("nextBtn");
+      nextBtn.style.display = "inline-block";
+      nextBtn.onclick = () => { current++; render(); };
+    });
+  });
+}
+
+render();
+</script>
+</body>
+</html>

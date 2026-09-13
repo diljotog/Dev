@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lesson — DevLearn</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="logo" onclick="location.href='index.html'">⚡ DevLearn</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="progress.html">📊 Progress</a>
+    <button id="themeBtn">🌙</button>
+  </nav>
+</header>
+
+<main id="lessonMain"></main>
+
+<footer>DevLearn Premium 🚀</footer>
+
+<script src="data/languages.js"></script>
+<script src="data/courses.js"></script>
+<script src="data/quizzes.js"></script>
+<script src="storage.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const courseName = params.get("course") || "Python";
+const index = parseInt(params.get("i") || "0");
+
+let course = COURSES_DB[courseName];
+if (!course) {
+  const langData = ALL_LANGUAGES.find(l => l.name === courseName);
+  if (langData) course = generateGenericCourse(courseName, langData.category);
+}
+
+if (!course) {
+  document.getElementById("lessonMain").innerHTML = "<h2>Lesson nahi mila 😕</h2>";
+} else {
+  const lesson = course.lessons[index];
+  const total = course.lessons.length;
+  const prev = index > 0 ? index - 1 : null;
+  const next = index < total - 1 ? index + 1 : null;
+
+  document.getElementById("lessonMain").innerHTML = `
+    <div class="lesson-view">
+      <div class="breadcrumb">
+        <a href="course.html?name=${encodeURIComponent(courseName)}">${course.icon} ${courseName}</a>
+        <span>›</span>
+        <span>Lesson ${index + 1} / ${total}</span>
+      </div>
+
+      <h1>${lesson.title}</h1>
+
+      <div class="theory-box">
+        <h3>📖 Theory</h3>
+        <p>${lesson.theory}</p>
+      </div>
+
+      <div class="code-box">
+        <div class="code-head">
+          <span>💻 Code</span>
+          <button class="copy-btn" onclick="copyCode()">📋 Copy</button>
+        </div>
+        <pre id="codeBlock">${escapeHtml(lesson.code)}</pre>
+      </div>
+
+      <div class="output-box">
+        <h3>▶️ Expected Output</h3>
+        <pre>${escapeHtml(lesson.output)}</pre>
+      </div>
+
+      <div class="try-box">
+        <h3>🧪 Try It Yourself</h3>
+        <textarea id="playground" rows="8">${lesson.code}</textarea>
+        <div class="btn-row">
+          <button class="primary-btn" onclick="runCode()">▶ Run</button>
+          <button class="secondary-btn" onclick="clearOutput()">🗑 Clear</button>
+        </div>
+        <pre id="playOutput" class="play-output"></pre>
+      </div>
+
+      <div class="lesson-nav">
+        ${prev !== null ? `<button onclick="location.href='lesson.html?course=${encodeURIComponent(courseName)}&i=${prev}'">← Previous</button>` : "<span></span>"}
+        <button class="primary-btn" onclick="markDone()" id="doneBtn">
+          ${Storage.isLessonComplete(courseName, index) ? "✅ Completed" : "✓ Mark as Complete"}
+        </button>
+        ${next !== null ? `<button onclick="location.href='lesson.html?course=${encodeURIComponent(courseName)}&i=${next}'">Next →</button>` : "<span></span>"}
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[c]));
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById("codeBlock").textContent);
+  alert("Code copied!");
+}
+
+function markDone() {
+  Storage.markLessonComplete(courseName, index);
+  document.getElementById("doneBtn").textContent = "✅ Completed";
+  document.getElementById("doneBtn").disabled = true;
+  alert("🎉 Lesson complete! +10 XP");
+}
+
+// Simple playground (JS only runs, others just show)
+function runCode() {
+  const code = document.getElementById("playground").value;
+  const out = document.getElementById("playOutput");
+
+  if (courseName === "JavaScript" || courseName === "TypeScript") {
+    try {
+      const logs = [];
+      const origLog = console.log;
+      console.log = (...args) => logs.push(args.join(" "));
+      new Function(code)();
+      console.log = origLog;
+      out.textContent = logs.join("\n") || "(no output)";
+    } catch (e) {
+      out.textContent = "❌ Error: " + e.message;
+    }
+  } else {
+    out.textContent = `⚠️ ${courseName} code browser mein directly run nahi hota.\nExpected output:\n\n${lesson.output}`;
+  }
+}
+
+function clearOutput() {
+  document.getElementById("playOutput").textContent = "";
+}
+</script>
+</body>
+</html>
